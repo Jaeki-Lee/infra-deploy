@@ -1,0 +1,54 @@
+---
+- name: 스토리지 서버 환경 구성 (NFS 서버)
+  hosts: storage_server
+  become: true
+
+  vars:
+    shared_db_dir: /shared/db
+    allowed_client_network: 211.183.3.20  # NFS 클라이언트 IP 대역 (너 상황에 맞게)
+
+  tasks:
+    - name: NFS 서버 패키지 설치
+      apt:
+        name: nfs-kernel-server
+        state: present
+        update_cache: yes
+      tags: nfs
+
+    - name: 공유 디렉토리 생성1
+      file:
+        path: "{{ shared_db_dir }}"
+        state: directory
+        owner: user1
+        group: user1
+        mode: '0777'
+      tags: nfs
+
+    - name: 공유 디렉토리 생성2
+      file:
+        path: "{{ shared_dir }}"
+        state: directory
+        owner: user1
+        group: user1
+        mode: '0777'
+      tags: nfs
+
+    - name: /etc/exports 설정
+      blockinfile:
+        path: /etc/exports
+        block: |
+          {{ shared_dir }} {{ allowed_client_network }}(rw,sync,no_subtree_check,no_root_squash)
+      tags: nfs
+
+    - name: NFS 서비스 재시작
+      service:
+        name: nfs-kernel-server
+        state: restarted
+      tags: nfs
+
+    - name: 방화벽 - NFS 포트 허용
+      ufw:
+        rule: allow
+        port: 2049
+        proto: tcp
+      tags: firewall
