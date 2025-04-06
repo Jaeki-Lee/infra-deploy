@@ -1,0 +1,66 @@
+---
+- name: Setup backup cron job on storage servers
+  hosts: storage
+  become: true
+  vars:
+    backup_dir: "/gluster/logs"
+    backup_target: "/gluster/backup"
+    s3_bucket: "your-s3-bucket-name"
+    aws_region: "ap-northeast-2"
+    aws_access_key: "YOUR_ACCESS_KEY"
+    aws_secret_key: "YOUR_SECRET_KEY"
+    backup_script_path: "/usr/local/bin/backup_logs.sh" #백업 수행하는 쉘 스크립트 저장 위치, cron 실행될 파일 경로
+    cron_time: "0 0 * * *"  # 매일 자정
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name: awscli
+        state: present
+        update_cache: yes
+
+# aws 자격 증명 파일 설정 / s3 에 안전하게 접속하도록 사용자 전용 인증 요청청
+    - name: Configure AWS CLI credentials
+      copy: #copy 모듈 원격 서버에 파일을 만들어서 넣는 기능능
+        dest: "/root/.aws/credentials" # 파일이 생성될 위치
+        content: | # 파일에 들어갈 내용 작성
+          [default] 
+          aws_access_key_id={{ aws_access_key }}
+          aws_secret_access_key={{ aws_secret_key }}
+        mode: '0600'
+
+#aws cli 기본 설정
+    - name: Configure AWS CLI config
+      copy:
+        dest: "/root/.aws/config"
+        content: |
+          [default]
+          region={{ aws_region }}
+          output=json
+        mode: '0600'
+
+#s3 에 업로드 하는 백업 스크립트 생성성
+    - name: Create backup script
+      copy:
+        dest: "{{ backup_script_path }}"
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          TIMESTAMP=$(date +\%Y-\%m-\%d)
+          BACKUP_NAME="logs_$TIMESTAMP.tar.gz"
+          mkdir -p {{ backup_target }}
+          tar -czf {{ backup_target }}/$BACKUP_NAME {{ backup_dir }}
+          aws s3 cp {{ backup_target }}/$BACKUP_NAME s3://{{ s3_bucket }}/$BACKUP_NAME
+          # Optional: remove local backup after upload
+          # rm -f {{ backup_target }}/$BACKUP_NAME
+          find {{ backup_target }} -name "*.tar.gz" -mtime +7 -exec rm -f {} \;
+        #마지막 줄은 7일 이상된 백업 자동 삭제 명령어
+
+# s3로 백업을 하는 작업
+    - name: Add cron job for daily backup
+      cron:
+        name: "Daily log backup to S3"
+        minute: "0"
+        hour: "0"
+        user: root # 루트의 권한으로 스크립트 실행행
+        job: "{{ backup_script_path }}" #cron 이 실제로 실행할 명령어 지정
