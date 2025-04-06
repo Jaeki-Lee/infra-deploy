@@ -8,10 +8,12 @@
     shared_db2_dir: /mnt/shared/db2
     shared_webapp_dir: /mnt/shared/webapp
     shared_monitoring_dir: /mnt/shared/monitoring
-    allowed_client_network: # NFS 클라이언트 IP 대역
-      - 172.16.1.20
-      - 172.16.1.30
-      - 172.16.1.60
+
+    exported_dirs:
+      - [ "{{ shared_db1_dir }}", "172.16.1.30" ]
+      - [ "{{ shared_db2_dir }}", "172.16.1.30" ]
+      - [ "{{ shared_webapp_dir }}", "172.16.1.20" ]
+      - [ "{{ shared_monitoring_dir }}", "172.16.1.60" ]
 
   tasks:
     - name: NFS 서버 패키지 설치
@@ -21,38 +23,27 @@
         update_cache: yes
       tags: nfs
 
-    - name: 공유 디렉토리 생성1 db
+    - name: 공유 디렉토리 생성
       file:
-        path: "{{ shared_db_dir }}"
+        path: "{{ item[0] }}"
         state: directory
         owner: user1
         group: user1
         mode: '0777'
-      tags: nfs
-
-    - name: 공유 디렉토리 생성2 WebApp
-      file:
-        path: "{{ shared_dir }}"
-        state: directory
-        owner: user1
-        group: user1
-        mode: '0777'
-      tags: nfs
-
-    - name: 공유 디렉토리 생성3 monitoring
-      file:
-        path: "{{ shared_dir }}"
-        state: directory
-        owner: user1
-        group: user1
-        mode: '0777'
+      loop: "{{ exported_dirs }}"
       tags: nfs
 
     - name: /etc/exports 설정
-      blockinfile:
+      lineinfile:
         path: /etc/exports
-        block: |
-          {{ shared_dir }} {{ allowed_client_network }}(rw,sync,no_subtree_check,no_root_squash)
+        line: "{{ item[0] }} {{ item[1] }}(rw,sync,no_root_squash)"
+        state: present
+        create: yes
+      loop: "{{ exported_dirs }}"
+      tags: nfs
+
+    - name: exportfs 적용
+      command: exportfs -ra
       tags: nfs
 
     - name: NFS 서비스 재시작
