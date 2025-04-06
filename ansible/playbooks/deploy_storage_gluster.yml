@@ -1,0 +1,66 @@
+---
+- name: GlusterFS Setup Playbook (Multi-volume)
+  hosts: storage
+  become: true
+
+  vars:
+    brick_path: /gluster/brick1
+    volumes:
+      - { name: db1,         mount: /mnt/shared/db1 }
+      - { name: db2,         mount: /mnt/shared/db2 }
+      - { name: webapp,      mount: /mnt/shared/webapp }
+      - { name: monitoring,  mount: /mnt/shared/monitoring }
+
+  tasks:
+
+    - name: GlusterFS 설치
+      apt:
+        name: glusterfs-server
+        state: present
+        update_cache: yes
+
+    - name: GlusterFS 시작 및 부팅 시 자동 시작
+      systemd:
+        name: glusterd
+        state: started
+        enabled: true
+
+    - name: brick 디렉토리 생성
+      file:
+        path: "{{ brick_path }}/{{ item.name }}"
+        state: directory
+        recurse: yes
+      loop: "{{ volumes }}"
+
+    - name: Gluster 피어 프로브 (스토리지1에서만 실행)
+      shell: |
+        gluster peer probe {{ hostvars['storage-server2']['ansible_host'] }}
+      when: inventory_hostname == 'storage1'
+
+    - name: 볼륨 생성 (스토리지1에서만 실행)
+      shell: |
+        gluster volume create {{ item.name }} replica 2 \
+        {{ hostvars['storage-server1']['ansible_host'] }}:{{ brick_path }}/{{ item.name }} \
+        {{ hostvars['storage-server2']['ansible_host'] }}:{{ brick_path }}/{{ item.name }} force
+      when: inventory_hostname == 'storage1'
+      loop: "{{ volumes }}"
+
+    - name: 볼륨 시작 (스토리지1에서만 실행)
+      shell: gluster volume start {{ item.name }}
+      when: inventory_hostname == 'storage1'
+      loop: "{{ volumes }}"
+
+    - name: 마운트 지점 생성
+      file:
+        path: "{{ item.mount }}"
+        state: directory
+      loop: "{{ volumes }}"
+
+    - name: GlusterFS 볼륨 마운트
+      mount:
+        path: "{{ item.mount }}"
+        src: "{{ hostvars['storage-server1']['ansible_host'] }}:/{{ item.name }}"
+        fstype: glusterfs
+        opts: defaults,_netdev
+        state: mounted
+      loop: "{{ volumes }}"
