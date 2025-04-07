@@ -1,15 +1,16 @@
 ---
 - name: GlusterFS Setup Playbook (Multi-volume)
-  hosts: storage-server
+  hosts: storage
   become: true
 
   vars:
     brick_path: /gluster/brick1
     volumes:
-      - { name: db1,         mount: /mnt/shared/db1 }
-      - { name: db2,         mount: /mnt/shared/db2 }
-      - { name: webapp,      mount: /mnt/shared/webapp }
-      - { name: monitoring,  mount: /mnt/shared/monitoring }
+      - { name: db1 }
+      - { name: db2 }
+      - { name: web-logs, dir: web/logs }
+      - { name: app-logs, dir: app/logs }
+      - { name: monitoring }
 
   tasks:
 
@@ -28,7 +29,7 @@
     #  실질적인 저장소
     - name: brick 디렉토리 생성
       file:
-        path: "{{ brick_path }}/{{ item.name }}"
+        path: "{{ brick_path }}/{{ item.dir | default(item.name) }}"
         state: directory
         recurse: yes
       loop: "{{ volumes }}"
@@ -37,19 +38,27 @@
     - name: Gluster 피어 프로브 (스토리지1에서만 실행)
       shell: |
         gluster peer probe {{ hostvars['storage-server2']['ansible_host'] }}
-      when: inventory_hostname == 'storage1'
+      when: inventory_hostname == 'storage-server1'
 
     - name: 볼륨 생성 (스토리지1에서만 실행)
       shell: |
+       if ! gluster volume info {{ item.name }} >/dev/null 2>&1; then
         gluster volume create {{ item.name }} replica 2 \
-        {{ hostvars['storage-server1']['ansible_host'] }}:{{ brick_path }}/{{ item.name }} \
-        {{ hostvars['storage-server2']['ansible_host'] }}:{{ brick_path }}/{{ item.name }}
-      when: inventory_hostname == 'storage1'
+        172.16.1.40:{{ brick_path }}/{{ item.dir | default(item.name) }} \
+        172.16.1.50:{{ brick_path }}/{{ item.dir | default(item.name) }} \
+        force
+       fi
+      when: inventory_hostname == 'storage-server1'
       loop: "{{ volumes }}"
 #만들어진 볼륨을 실제로 작동 시키는 단계 이것을 해야 클라이언트가 mount 명령으로 접근 가능
+#force 없으면 진행이 안된다 이유는 볼륨 생성시 생성하겠냐고 뜨는데 ansible로 자동 생성이 이게 안보여서 force를 해야 yes가 된다
+
     - name: 볼륨 시작 (스토리지1에서만 실행)
-      shell: gluster volume start {{ item.name }}
-      when: inventory_hostname == 'storage1'
+      shell: |
+        if ! gluster volume info {{ item.name }} | grep -q 'Status: Started'; then
+          gluster volume start {{ item.name }}
+        fi
+      when: inventory_hostname == 'storage-server1'
       loop: "{{ volumes }}"
 
 ### 클라이언트에서 할 것
@@ -58,14 +67,11 @@
 #  file:
 #    path: "{{ item.mount }}"
 #    state: directory
-#  loop: "{{ volumes }}"
 
-
-#- name: GlusterFS 볼륨 마운트
+#- name: GlusterFS 볼륨 마운트 예시시
 #  mount:
-#    path: "{{ item.mount }}"
-#    src: "{{ hostvars['storage-server1']['ansible_host'] }}:/{{ item.name }}"
+#    path: "/mnt/web/logs"
+#    src: "172.16.1.40:gluster/brick/web-logs"
 #    fstype: glusterfs
 #    opts: defaults,_netdev
 #    state: mounted
-#  loop: "{{ volumes }}"
