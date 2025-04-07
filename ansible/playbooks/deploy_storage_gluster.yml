@@ -8,10 +8,10 @@
     volumes:
       - { name: db1 }
       - { name: db2 }
-      - { name: web-logs, dir: web/logs }
-      - { name: app-logs, dir: app/logs }
+      - { name: web, dir: web/logs }
+      - { name: app, dir: app/logs }
       - { name: monitoring }
-
+      
   tasks:
 
     - name: GlusterFS 설치
@@ -31,8 +31,11 @@
       file:
         path: "{{ brick_path }}/{{ item.dir | default(item.name) }}"
         state: directory
-        recurse: yes
+        owner: user1
+        group: user1
+        mode: '0777'
       loop: "{{ volumes }}"
+
 
 #피어1,2를 하나로 묶는 작업
     - name: Gluster 피어 프로브 (스토리지1에서만 실행)
