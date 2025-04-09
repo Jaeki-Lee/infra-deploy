@@ -122,10 +122,36 @@
 
     - name: Prometheus Alert Rules 복사
       copy:
-<<<<<<< HEAD
-        src: "{{ infra_components_root }}/alertmanager/alert_rules.yml"
-        dest: "{{ monitoring_root }}/alertmanager/alert_rules.yml"
-=======
-        src: ../../docker/monitoring/rules/alert_rules.yml
-        dest: /opt/monitoring/rules/alert_rules.yml
->>>>>>> 2ab1fc9 (alert_rules 경로 수정)
+        src: "{{ infra_components_root }}/rules/alert_rules.yml"
+        dest: "{{ monitoring_root }}/rules/alert_rules.yml"
+
+    # 7. GlusterFS 설치 및 마운트
+    - name: install glusterfs
+      apt:
+        name: glusterfs-client
+        state: present
+
+    - name: unmount glusterfs
+      shell: |
+        umount -l shared/mnt/logs/monitoring
+      ignore_errors: true
+
+    - name: Remove mount dir monitoring logs
+      file:
+        path: shared/mnt/logs/monitoring
+        state: absent
+      ignore_errors: true
+
+    - name: Create mount dir monitoring logs
+      file:
+        path: shared/mnt/logs/monitoring
+        state: directory
+        mode: '0777'
+
+    - name: GlusterFS mount monitoring logs
+      mount:
+        path: "shared/mnt/logs/monitoring"
+        src: "172.16.1.40:monitoring"
+        fstype: glusterfs
+        opts: defaults,_netdev
+        state: mounted
