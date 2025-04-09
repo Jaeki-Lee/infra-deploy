@@ -48,16 +48,6 @@
         group: user1
         mode: '0644'
 
-    - name: Stop and remove existing containers
-      shell: docker compose down --remove-orphans || true
-      args:
-        chdir: "{{ deploy_root }}"
-
-    - name: Start nginx container
-      shell: docker compose up -d
-      args:
-        chdir: "{{ deploy_root }}"
-
     - name: Create html directory
       file:
         path: "{{ deploy_root }}/html"
@@ -73,5 +63,17 @@
         owner: user1
         group: user1
         mode: '0644'
+
+    - name: Stop and remove existing containers
+      shell: docker compose down --remove-orphans || true
+      args:
+        chdir: "{{ deploy_root }}"
+
+    - name: Start nginx container
+      shell: docker compose up -d
+      args:
+        chdir: "{{ deploy_root }}"
+
+
 
 
