@@ -58,3 +58,20 @@
       args:
         chdir: "{{ deploy_root }}"
 
+    - name: Create html directory
+      file:
+        path: "{{ deploy_root }}/html"
+        state: directory
+        owner: user1
+        group: user1
+        mode: '0755'
+
+    - name: Copy HTML files
+      copy:
+        src: "{{ local_project_root }}/html"
+        dest: "{{ deploy_root }}/"
+        owner: user1
+        group: user1
+        mode: '0644'
+
+
