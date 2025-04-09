@@ -118,6 +118,11 @@
         path: /opt/monitoring/rules
         state: directory
 
+    - name: rules 디렉토리 생성
+      file:
+        path: /opt/monitoring/rules
+        state: directory
+
     - name: Alertmanager 설정 파일 복사
       copy:
         src: "{{ infra_components_root }}/alertmanager/alertmanager.yml"
