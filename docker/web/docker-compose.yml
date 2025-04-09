@@ -1,11 +1,12 @@
 version: '3.8'
 
 services:
-  nginx:
+  web:
     image: nginx:1.25
     container_name: web-nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./html:/usr/share/nginx/html:ro
     ports:
       - "80:80"
     networks:

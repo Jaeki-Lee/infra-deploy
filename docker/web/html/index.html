@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>날씨 정보</title>
+    <script>
+        async function fetchWeather() {
+            const res = await fetch("/api/weather");
+            const data = await res.json();
+            document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+        }
+    </script>
+</head>
+<body>
+    <h1>실시간 날씨 정보</h1>
+    <button onclick="fetchWeather()">날씨 가져오기</button>
+    <pre id="result"></pre>
+</body>
+</html>
