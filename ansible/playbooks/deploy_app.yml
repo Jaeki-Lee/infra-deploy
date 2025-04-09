@@ -2,7 +2,6 @@
 - name: Deploy Flask App Cluster
   hosts: app
   become: true
-
   vars:
     deploy_root: /home/user1/app_deploy  # 원격 서버에 생성할 디렉토리
     local_project_root: ../../infra-components/app
