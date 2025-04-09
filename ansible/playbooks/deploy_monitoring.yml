@@ -114,6 +114,11 @@
         path: "{{ monitoring_root }}/alertmanager"
         state: directory
 
+    - name: rules 디렉토리 생성
+      file:
+        path: /opt/monitoring/rules
+        state: directory
+
     - name: Alertmanager 설정 파일 복사
       copy:
         src: "{{ infra_components_root }}/alertmanager/alertmanager.yml"
@@ -121,5 +126,10 @@
 
     - name: Prometheus Alert Rules 복사
       copy:
+<<<<<<< HEAD
         src: "{{ infra_components_root }}/alertmanager/alert_rules.yml"
         dest: "{{ monitoring_root }}/alertmanager/alert_rules.yml"
+=======
+        src: ../../docker/monitoring/rules/alert_rules.yml
+        dest: /opt/monitoring/rules/alert_rules.yml
+>>>>>>> 2ab1fc9 (alert_rules 경로 수정)
