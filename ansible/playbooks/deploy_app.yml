@@ -4,8 +4,8 @@
   become: true
 
   vars:
-    deploy_root: /home/user1/docker/app_deploy  # 원격 서버에 생성할 디렉토리
-    local_project_root: ../../docker/app
+    deploy_root: /home/user1/app_deploy  # 원격 서버에 생성할 디렉토리
+    local_project_root: ../../infra-components/app
     flask_app_files:
       - Dockerfile
       - docker-compose.yml
@@ -57,12 +57,11 @@
         - main.py
         - config.py
 
-    # 기존 컨테이너 제거
+    # docker compose 실행전 기존 컨테이너 제거
     - name: Stop and remove existing containers
-      shell: docker compose down || true
+      shell: docker compose down --remove-orphans || true
       args:
         chdir: "{{ deploy_root }}"
-      ignore_errors: true
 
     # Compose 실행
     - name: Launch Flask app containers

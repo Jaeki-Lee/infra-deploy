@@ -4,17 +4,19 @@
   become: true
 
   vars:
-    deploy_root: /home/user1/docker/web_deploy
-    local_project_root: ../../docker/web
+    deploy_root: /home/user1/web_deploy
+    local_project_root: ../../infra-components/web
     config_files:
       - docker-compose.yml
     nginx_dir: nginx
 
   tasks:
+    # Docker 설치
     - name: Ensure Docker is installed
       include_role:
         name: common
 
+    # 디렉토리 생성
     - name: Create project root directory
       file:
         path: "{{ deploy_root }}"
@@ -23,6 +25,7 @@
         group: user1
         mode: '0755'
 
+    # nginx subdirectory 생성성
     - name: Create nginx config directory
       file:
         path: "{{ deploy_root }}/{{ nginx_dir }}"
@@ -31,6 +34,7 @@
         group: user1
         mode: '0755'
 
+    # docker-compose.yml 복사
     - name: Copy config files
       copy:
         src: "{{ local_project_root }}/{{ item }}"
@@ -40,6 +44,7 @@
         mode: '0644'
       loop: "{{ config_files }}"
 
+    # nginx.conf 복사
     - name: Copy nginx.conf
       copy:
         src: "{{ local_project_root }}/nginx/nginx.conf"
@@ -48,11 +53,13 @@
         group: user1
         mode: '0644'
 
+    # docker compose 실행전 기존 컨테이너 제거
     - name: Stop and remove existing containers
-      shell: docker compose down || true
+      shell: docker compose down --remove-orphans || true
       args:
         chdir: "{{ deploy_root }}"
 
+    # docker compose 실행
     - name: Start nginx container
       shell: docker compose up -d
       args:
