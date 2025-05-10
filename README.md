@@ -16,9 +16,9 @@
 ---
 
 ## 🖥️ 인프라 구성
-![Project - Page 1](https://github.com/user-attachments/assets/f0425267-ac7b-4d77-be94-a6df4554520d)
 
 ### 🛜 네트워크 UML
+![Project - Page 1](https://github.com/user-attachments/assets/f0425267-ac7b-4d77-be94-a6df4554520d)
 
 ### 🎛️ 인프라 UML
 ![Project - Page 1 (2)](https://github.com/user-attachments/assets/d4e9d6f8-c88b-4323-b1be-93cbd9579514)
