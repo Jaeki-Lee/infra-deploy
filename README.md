@@ -4,12 +4,6 @@
 
 > Jenkins + Ansible + Docker Compose를 활용해 App, DB, Web, Monitoring 환경을 자동으로 배포합니다.
 
-## 🛜 네트워크 구조
-![onpre_network](https://github.com/user-attachments/assets/147461a5-8f92-46b5-9a09-3cef2587875f)
-
-## 🎛️ 인프라 구조
-![onpre_infra](https://github.com/user-attachments/assets/06d159c6-8ebd-44d1-a8dd-9a461d4e2b46)
-
 ---
 
 ## 📦 프로젝트 목적
@@ -22,6 +16,12 @@
 ---
 
 ## 🖥️ 인프라 구성
+![Project - Page 1](https://github.com/user-attachments/assets/f0425267-ac7b-4d77-be94-a6df4554520d)
+
+### 🛜 네트워크 UML
+
+### 🎛️ 인프라 UML
+![Project - Page 1 (2)](https://github.com/user-attachments/assets/d4e9d6f8-c88b-4323-b1be-93cbd9579514)
 
 ```
 [Control Server] ── Ansible + SSH
@@ -74,6 +74,7 @@ infra-deploy/
 ---
 
 ## 🌐 간단한 웹 페이지 흐름
+![Project - Page 1 (1)](https://github.com/user-attachments/assets/21760762-759f-44de-a747-06571e8e2a52)
 
 1. 사용자가 `http://web-server-ip` 접속
 2. `proxy` 컨테이너가 `web1` 또는 `web2`로 분산 처리
