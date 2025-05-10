@@ -107,7 +107,7 @@ docker logs flask-app1
 
 ---
 
-## ✍️ 참고
+## ✍️ 기술스택
 
 - Python Flask
 - PostgreSQL + Patroni + etcd
