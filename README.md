@@ -4,6 +4,12 @@
 
 > Jenkins + Ansible + Docker Compose를 활용해 App, DB, Web, Monitoring 환경을 자동으로 배포합니다.
 
+## 🛜 네트워크 구조
+![onpre_network](https://github.com/user-attachments/assets/147461a5-8f92-46b5-9a09-3cef2587875f)
+
+## 🎛️ 인프라 구조
+![onpre_infra](https://github.com/user-attachments/assets/06d159c6-8ebd-44d1-a8dd-9a461d4e2b46)
+
 ---
 
 ## 📦 프로젝트 목적
