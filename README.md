@@ -86,6 +86,8 @@ infra-deploy/
 
 ## 🗃️ 스토리지, 백업 프로세스
 
+![Image](https://github.com/user-attachments/assets/840fbb5a-07b8-4227-b0db-b9cae2c73b29)
+
 1. 스토리지 서버 2대를 GlusterFS로 클러스터링하여 고가용성(HA) 스토리지 환경을 구성함.
 2. 클러스터링된 스토리지 서버는 /shared 디렉토리를 공유하며, 웹, 앱, DB, 모니터링 서버의 로그 디렉토리와 마운트하여 사용함.
 3. 각 서버에서 발생하는 로그 파일은 해당 공유 디렉토리에 저장됨.
