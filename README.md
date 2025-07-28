@@ -95,7 +95,7 @@ infra-deploy/
 ---
 
 ## 📈 모니터링 프로세스
-![모니터링 구조도 이미지 자리]
+<img width="771" height="401" alt="image" src="https://github.com/user-attachments/assets/38cf3e2a-63e1-461c-844f-7814d7b5f344" />
 
 1. **메트릭 수집**: 각 서버(Web, App, DB, Storage)에 Node Exporter를 설치하여 시스템 메트릭(CPU, Memory, Disk, Network) 데이터를 수집함.
 
